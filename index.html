@@ -1,0 +1,946 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quantum Reactor</title>
+    <meta name="description" content="Build quantum reactors, generate energy, and unlock the secrets of the universe!">
+    <meta name="keywords" content="idle game, clicker, quantum, reactor, energy, incremental">
+    <meta property="og:title" content="Quantum Reactor - Idle Energy Game">
+    <meta property="og:description" content="Build quantum reactors and generate infinite energy!">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://gerandios.github.io/quantum-reactor">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto+Mono:wght@300;400&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary-color: #00ffff;
+            --background-color: #050a18;
+            --container-bg: rgba(13, 26, 61, 0.6);
+            --disabled-color: #5f7a7a;
+            --glow-color: rgba(0, 255, 255, 0.75);
+            --button-bg: rgba(0, 255, 255, 0.1);
+            --button-hover-bg: rgba(0, 255, 255, 0.25);
+            --button-border: 1px solid rgba(0, 255, 255, 0.4);
+            --success-color: #00ff88;
+            --warning-color: #ffaa00;
+        }
+
+        * {
+            box-sizing: border-box;
+            user-select: none;
+        }
+
+        body {
+            background-color: var(--background-color);
+            background: linear-gradient(-45deg, #050a18, #0d1a3d, #02040c, #0d1a3d);
+            background-size: 400% 400%;
+            animation: gradientBG 25s ease infinite;
+            color: white;
+            font-family: 'Roboto Mono', monospace;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .main-container {
+            width: 100%;
+            max-width: 500px;
+            background: var(--container-bg);
+            border: var(--button-border);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 0 15px rgba(0,0,0,0.5), inset 0 0 10px rgba(0, 255, 255, 0.1);
+            backdrop-filter: blur(5px);
+            text-align: center;
+            position: relative;
+        }
+
+        .language-selector {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            display: flex;
+            gap: 5px;
+        }
+
+        .lang-btn {
+            padding: 5px 8px;
+            background: var(--button-bg);
+            border: var(--button-border);
+            border-radius: 5px;
+            color: white;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .lang-btn:hover, .lang-btn.active {
+            background: var(--button-hover-bg);
+        }
+
+        h1 {
+            font-family: 'Orbitron', sans-serif;
+            color: var(--primary-color);
+            text-shadow: 0 0 5px var(--glow-color), 0 0 10px var(--glow-color), 0 0 20px var(--glow-color);
+            margin: 30px 0 20px 0;
+            letter-spacing: 2px;
+            animation: flicker 5s infinite alternate;
+        }
+        
+        @keyframes flicker {
+            0%, 18%, 22%, 25%, 53%, 57%, 100% {
+                text-shadow:
+                0 0 4px var(--primary-color),
+                0 0 11px var(--primary-color),
+                0 0 19px var(--primary-color),
+                0 0 40px var(--glow-color),
+                0 0 80px var(--glow-color);
+            }
+            20%, 24%, 55% { text-shadow: none; }
+        }
+
+        .display-panel {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 25px;
+            border: 1px solid rgba(0,0,0,0.2);
+            cursor: pointer;
+            transition: transform 0.1s ease, box-shadow 0.1s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .display-panel:hover {
+            box-shadow: 0 0 15px rgba(0, 255, 255, 0.3);
+        }
+
+        .display-panel:active {
+            transform: scale(0.98);
+            box-shadow: inset 0 0 15px var(--glow-color);
+        }
+
+        .click-effect {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: var(--primary-color);
+            font-weight: bold;
+            font-size: 1.2rem;
+            pointer-events: none;
+            animation: clickPop 0.6s ease-out forwards;
+        }
+
+        @keyframes clickPop {
+            0% {
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(1);
+            }
+            100% {
+                opacity: 0;
+                transform: translate(-50%, -80%) scale(1.5);
+            }
+        }
+
+        .energy-counter {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #fff;
+            text-shadow: 0 0 8px var(--glow-color);
+            margin-bottom: 5px;
+            line-height: 1.1;
+        }
+
+        .eps-counter {
+            font-size: 1rem;
+            color: var(--primary-color);
+            font-weight: 400;
+        }
+
+        .boost-indicator {
+            background: rgba(0, 255, 136, 0.2);
+            border: 1px solid var(--success-color);
+            border-radius: 8px;
+            padding: 10px;
+            margin-bottom: 15px;
+            color: var(--success-color);
+            font-size: 0.9rem;
+            display: none;
+        }
+
+        .boost-indicator.active {
+            display: block;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        .referral-section {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255, 170, 0, 0.3);
+        }
+
+        .referral-link {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 8px;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 0.8rem;
+            margin: 10px 0;
+            word-break: break-all;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .copy-btn {
+            padding: 5px 10px;
+            background: var(--button-bg);
+            border: var(--button-border);
+            border-radius: 5px;
+            color: white;
+            font-size: 0.8rem;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+
+        .upgrades-container {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .upgrade-btn {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            padding: 15px;
+            background: var(--button-bg);
+            border: var(--button-border);
+            border-radius: 8px;
+            color: white;
+            font-family: 'Roboto Mono', monospace;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            outline: none;
+            touch-action: manipulation;
+        }
+
+        .upgrade-btn:hover:not(:disabled) {
+            background: var(--button-hover-bg);
+            transform: scale(1.02);
+            box-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
+        }
+        
+        .upgrade-btn:active:not(:disabled) { 
+            transform: scale(0.98);
+            transition: transform 0.05s ease;
+        }
+        
+        .upgrade-btn:disabled {
+            background: rgba(0,0,0,0.2);
+            border-color: rgba(95, 122, 122, 0.2);
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+        
+        .upgrade-info { text-align: left; }
+        .upgrade-name { font-weight: bold; }
+        .upgrade-level { font-size: 0.8em; color: #ccc; }
+        .upgrade-cost-info { text-align: right; }
+        .upgrade-cost { font-weight: bold; color: var(--primary-color); }
+        .upgrade-btn:disabled .upgrade-cost { color: var(--disabled-color); }
+        .upgrade-benefit { font-size: 0.8em; color: #ccc; }
+
+        .footer-links {
+            margin-top: 20px;
+            font-size: 0.8rem;
+        }
+
+        .footer-links a {
+            color: var(--primary-color);
+            text-decoration: none;
+            margin: 0 10px;
+        }
+
+        .footer-links a:hover {
+            text-decoration: underline;
+        }
+
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(5px);
+            display: none; justify-content: center; align-items: center; z-index: 1000;
+        }
+        
+        .modal-content {
+            background: var(--container-bg); padding: 30px; border-radius: 15px;
+            border: var(--button-border); box-shadow: 0 0 25px rgba(0,0,0,0.6);
+            text-align: center; max-width: 90%; width: 400px;
+        }
+        
+        .modal-content h2 { font-family: 'Orbitron', sans-serif; color: var(--primary-color); margin-top: 0; }
+        .modal-content p { font-size: 1.1rem; margin: 20px 0; }
+        .modal-content .offline-gain { font-weight: bold; color: #fff; font-size: 1.5rem; }
+        
+        .modal-btn {
+            padding: 12px 25px; background: var(--button-bg); border: var(--button-border);
+            border-radius: 8px; color: white; font-family: 'Roboto Mono', monospace;
+            font-size: 1rem; cursor: pointer; transition: all 0.2s; margin: 10px 5px 0 5px;
+            outline: none;
+        }
+        
+        .modal-btn:hover { background: var(--button-hover-bg); box-shadow: 0 0 10px rgba(0, 255, 255, 0.3); }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <div class="language-selector">
+            <button class="lang-btn active" data-lang="en">EN</button>
+            <button class="lang-btn" data-lang="ru">RU</button>
+            <button class="lang-btn" data-lang="uk">UK</button>
+        </div>
+        
+        <h1 id="game-title">⚛️ Quantum Reactor</h1>
+        
+        <div id="boost-indicator" class="boost-indicator">
+            <div id="boost-text">🚀 Time Boost Active: 00:00</div>
+        </div>
+        
+        <div id="main-click-area" class="display-panel">
+            <div id="energy-counter" class="energy-counter">0</div>
+            <div id="energy-label">Energy</div>
+            <div id="eps-counter" class="eps-counter">0.0/sec</div>
+        </div>
+        
+        <div class="referral-section">
+            <div id="referral-title">🎁 Invite Friends</div>
+            <div id="referral-description">Get 1 hour time boost for each new player!</div>
+            <div id="referral-stats">Referrals: <span id="referral-count">0</span></div>
+            <div class="referral-link" id="referral-link"></div>
+            <button class="copy-btn" id="copy-btn">Copy Link</button>
+        </div>
+        
+        <div id="upgrades-container" class="upgrades-container"></div>
+        
+        <div class="footer-links">
+            <a href="privacy-policy.html" id="privacy-link">Privacy Policy</a>
+            <a href="https://github.com/gerandios/quantum-reactor" target="_blank">GitHub</a>
+        </div>
+    </div>
+    
+    <div id="offline-modal" class="modal-overlay">
+        <div class="modal-content">
+            <h2 id="offline-title">OFFLINE PROGRESS</h2>
+            <p id="offline-description">While you were away, the reactor generated:</p>
+            <p id="offline-gain" class="offline-gain">0 energy</p>
+            <p id="offline-time-text">(for <span id="offline-time">0</span> sec)</p>
+            <button id="claim-offline-btn" class="modal-btn">Claim</button>
+        </div>
+    </div>
+
+<script>
+// --- TRANSLATIONS ---
+const TRANSLATIONS = {
+    en: {
+        gameTitle: '⚛️ Quantum Reactor',
+        energy: 'Energy',
+        perSec: '/sec',
+        level: 'Level',
+        boostActive: '🚀 Time Boost Active',
+        inviteFriends: '🎁 Invite Friends',
+        inviteDescription: 'Get 1 hour time boost for each new player!',
+        referrals: 'Referrals',
+        copyLink: 'Copy Link',
+        linkCopied: 'Link copied to clipboard!',
+        privacyPolicy: 'Privacy Policy',
+        offlineTitle: 'OFFLINE PROGRESS',
+        offlineDescription: 'While you were away, the reactor generated:',
+        offlineTimeText: 'sec',
+        claim: 'Claim',
+        upgrades: [
+            { name: 'Nano Generator', icon: '⚙️' },
+            { name: 'Quantum Injector', icon: '⚡' },
+            { name: 'Plasma Circuit', icon: '🌀' },
+            { name: 'Singularity Compressor', icon: '💥' },
+            { name: 'Hypercubic Resonator', icon: '💠' },
+            { name: 'Multiverse Stabilizer', icon: '🌌' },
+            { name: 'Dark Matter Engine', icon: '🚀' },
+            { name: 'Reality Creator', icon: '🌠' }
+        ]
+    },
+    ru: {
+        gameTitle: '⚛️ Квантовый Реактор',
+        energy: 'Энергия',
+        perSec: '/сек',
+        level: 'Уровень',
+        boostActive: '🚀 Временной Буст Активен',
+        inviteFriends: '🎁 Пригласи Друзей',
+        inviteDescription: 'Получай 1 час временного буста за каждого нового игрока!',
+        referrals: 'Рефералы',
+        copyLink: 'Копировать Ссылку',
+        linkCopied: 'Ссылка скопирована в буфер обмена!',
+        privacyPolicy: 'Политика Конфиденциальности',
+        offlineTitle: 'ОФФЛАЙН-ПРОГРЕСС',
+        offlineDescription: 'Пока вас не было, реактор сгенерировал:',
+        offlineTimeText: 'сек',
+        claim: 'Забрать',
+        upgrades: [
+            { name: 'Нано-генератор', icon: '⚙️' },
+            { name: 'Квантовый инжектор', icon: '⚡' },
+            { name: 'Плазменный контур', icon: '🌀' },
+            { name: 'Сингулярный компрессор', icon: '💥' },
+            { name: 'Гиперкубический резонатор', icon: '💠' },
+            { name: 'Стабилизатор мультивселенной', icon: '🌌' },
+            { name: 'Двигатель темной материи', icon: '🚀' },
+            { name: 'Создатель реальностей', icon: '🌠' }
+        ]
+    },
+    uk: {
+        gameTitle: '⚛️ Квантовий Реактор',
+        energy: 'Енергія',
+        perSec: '/сек',
+        level: 'Рівень',
+        boostActive: '🚀 Часовий Буст Активний',
+        inviteFriends: '🎁 Запроси Друзів',
+        inviteDescription: 'Отримуй 1 годину часового бусту за кожного нового гравця!',
+        referrals: 'Реферали',
+        copyLink: 'Копіювати Посилання',
+        linkCopied: 'Посилання скопійовано в буфер обміну!',
+        privacyPolicy: 'Політика Конфіденційності',
+        offlineTitle: 'ОФЛАЙН-ПРОГРЕС',
+        offlineDescription: 'Поки вас не було, реактор згенерував:',
+        offlineTimeText: 'сек',
+        claim: 'Забрати',
+        upgrades: [
+            { name: 'Нано-генератор', icon: '⚙️' },
+            { name: 'Квантовий інжектор', icon: '⚡' },
+            { name: 'Плазмений контур', icon: '🌀' },
+            { name: 'Сингулярний компресор', icon: '💥' },
+            { name: 'Гіперкубічний резонатор', icon: '💠' },
+            { name: 'Стабілізатор мультивсесвіту', icon: '🌌' },
+            { name: 'Двигун темної матерії', icon: '🚀' },
+            { name: 'Творець реальностей', icon: '🌠' }
+        ]
+    }
+};
+
+// --- GAME CONFIG ---
+const UPGRADES_CONFIG = [
+    { id: 'gen1', baseCost: 10, baseEps: 0.1 },
+    { id: 'gen2', baseCost: 150, baseEps: 1 },
+    { id: 'gen3', baseCost: 2000, baseEps: 8 },
+    { id: 'gen4', baseCost: 30000, baseEps: 50 },
+    { id: 'gen5', baseCost: 500000, baseEps: 300 },
+    { id: 'gen6', baseCost: 8000000, baseEps: 2000 },
+    { id: 'gen7', baseCost: 150000000, baseEps: 15000 },
+    { id: 'gen8', baseCost: 3000000000, baseEps: 100000 }
+];
+
+const COST_MULTIPLIER = 1.15;
+const CLICK_POWER = 1;
+const MAX_EPS_LIMIT = 10000000;
+const BOOST_DURATION = 3600000; // 1 hour in milliseconds
+
+// --- GAME STATE ---
+let gameState = {
+    energy: 10,
+    eps: 0,
+    lastTick: Date.now(),
+    upgrades: {},
+    language: 'en',
+    referralCode: '',
+    referralCount: 0,
+    boostEndTime: 0,
+    processedReferrals: new Set()
+};
+
+let needsUpgradeRerender = true;
+let lastRenderTime = 0;
+let currentLang = 'en';
+
+// --- DOM ELEMENTS ---
+const elements = {
+    gameTitle: document.getElementById('game-title'),
+    energyCounter: document.getElementById('energy-counter'),
+    energyLabel: document.getElementById('energy-label'),
+    epsCounter: document.getElementById('eps-counter'),
+    boostIndicator: document.getElementById('boost-indicator'),
+    boostText: document.getElementById('boost-text'),
+    upgradesContainer: document.getElementById('upgrades-container'),
+    mainClickArea: document.getElementById('main-click-area'),
+    referralTitle: document.getElementById('referral-title'),
+    referralDescription: document.getElementById('referral-description'),
+    referralStats: document.getElementById('referral-stats'),
+    referralCount: document.getElementById('referral-count'),
+    referralLink: document.getElementById('referral-link'),
+    copyBtn: document.getElementById('copy-btn'),
+    privacyLink: document.getElementById('privacy-link'),
+    offlineModal: document.getElementById('offline-modal'),
+    offlineTitle: document.getElementById('offline-title'),
+    offlineDescription: document.getElementById('offline-description'),
+    offlineGain: document.getElementById('offline-gain'),
+    offlineTime: document.getElementById('offline-time'),
+    offlineTimeText: document.getElementById('offline-time-text'),
+    claimOfflineBtn: document.getElementById('claim-offline-btn')
+};
+
+// --- UTILITY FUNCTIONS ---
+function formatNumber(num) {
+    if (num < 1000) {
+        return Number.isInteger(num) ? num.toString() : num.toFixed(1);
+    }
+    const suffixes = ['', 'K', 'M', 'B', 'T', 'Q'];
+    const i = Math.min(Math.floor(Math.log10(num) / 3), suffixes.length - 1);
+    const value = (num / Math.pow(1000, i));
+    return value.toFixed(value < 10 ? 2 : 1) + suffixes[i];
+}
+
+function formatTime(seconds) {
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    const secs = seconds % 60;
+    return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+}
+
+function generateFingerprint() {
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    ctx.textBaseline = 'top';
+    ctx.font = '14px Arial';
+    ctx.fillText('Quantum Reactor Fingerprint', 2, 2);
+    
+    const fingerprint = [
+        canvas.toDataURL(),
+        navigator.userAgent,
+        navigator.language,
+        screen.width + 'x' + screen.height,
+        new Date().getTimezoneOffset(),
+        navigator.hardwareConcurrency || 0
+    ].join('|');
+    
+    // Simple hash function
+    let hash = 0;
+    for (let i = 0; i < fingerprint.length; i++) {
+        const char = fingerprint.charCodeAt(i);
+        hash = ((hash << 5) - hash) + char;
+        hash = hash & hash;
+    }
+    return Math.abs(hash).toString(36);
+}
+
+function generateReferralCode() {
+    return Math.random().toString(36).substring(2, 8).toUpperCase();
+}
+
+function getCurrentBoostMultiplier() {
+    if (Date.now() < gameState.boostEndTime) {
+        return 2; // 2x speed during boost
+    }
+    return 1;
+}
+
+// --- LANGUAGE FUNCTIONS ---
+function updateLanguage(lang) {
+    currentLang = lang;
+    gameState.language = lang;
+    
+    const t = TRANSLATIONS[lang];
+    elements.gameTitle.textContent = t.gameTitle;
+    elements.energyLabel.textContent = t.energy;
+    elements.referralTitle.textContent = t.inviteFriends;
+    elements.referralDescription.textContent = t.inviteDescription;
+    elements.referralStats.innerHTML = `${t.referrals}: <span id="referral-count">${gameState.referralCount}</span>`;
+    elements.copyBtn.textContent = t.copyLink;
+    elements.privacyLink.textContent = t.privacyPolicy;
+    elements.offlineTitle.textContent = t.offlineTitle;
+    elements.offlineDescription.textContent = t.offlineDescription;
+    elements.claimOfflineBtn.textContent = t.claim;
+    
+    // Update language buttons
+    document.querySelectorAll('.lang-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.lang === lang);
+    });
+    
+    needsUpgradeRerender = true;
+    updateBoostIndicator();
+}
+
+// --- CORE GAME FUNCTIONS ---
+function calculateCurrentCost(upgradeId) {
+    const config = UPGRADES_CONFIG.find(u => u.id === upgradeId);
+    const level = gameState.upgrades[upgradeId] || 0;
+    return Math.floor(config.baseCost * Math.pow(COST_MULTIPLIER, level));
+}
+
+function recalculateEPS() {
+    let totalEps = 0;
+    for (const id in gameState.upgrades) {
+        const level = gameState.upgrades[id];
+        if (level > 0) {
+            const config = UPGRADES_CONFIG.find(u => u.id === id);
+            if (config) {
+                totalEps += config.baseEps * level;
+            }
+        }
+    }
+    gameState.eps = Math.min(totalEps, MAX_EPS_LIMIT);
+}
+
+function buyUpgrade(upgradeId) {
+    const cost = calculateCurrentCost(upgradeId);
+    if (gameState.energy >= cost) {
+        gameState.energy -= cost;
+        gameState.upgrades[upgradeId] = (gameState.upgrades[upgradeId] || 0) + 1;
+        recalculateEPS();
+        needsUpgradeRerender = true;
+        updateDisplay();
+        return true;
+    }
+    return false;
+}
+
+function updateBoostIndicator() {
+    const now = Date.now();
+    if (now < gameState.boostEndTime) {
+        const remainingTime = Math.ceil((gameState.boostEndTime - now) / 1000);
+        const t = TRANSLATIONS[currentLang];
+        elements.boostText.textContent = `${t.boostActive}: ${formatTime(remainingTime)}`;
+        elements.boostIndicator.classList.add('active');
+    } else {
+        elements.boostIndicator.classList.remove('active');
+    }
+}
+
+function processReferral() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const referralCode = urlParams.get('ref');
+    
+    if (referralCode && referralCode !== gameState.referralCode) {
+        const userFingerprint = generateFingerprint();
+        const referralKey = `ref_${referralCode}_${userFingerprint}`;
+        
+        // Check if this user already used this referral
+        const processedReferrals = JSON.parse(localStorage.getItem('processedReferrals') || '[]');
+        
+        if (!processedReferrals.includes(referralKey)) {
+            // Add boost to referrer
+            const referrerData = localStorage.getItem('quantumReactorSave');
+            if (referrerData) {
+                try {
+                    const referrerState = JSON.parse(referrerData);
+                    if (referrerState.referralCode === referralCode) {
+                        referrerState.referralCount = (referrerState.referralCount || 0) + 1;
+                        referrerState.boostEndTime = Math.max(
+                            referrerState.boostEndTime || 0,
+                            Date.now() + BOOST_DURATION
+                        );
+                        localStorage.setItem('quantumReactorSave', JSON.stringify(referrerState));
+                    }
+                } catch (e) {
+                    console.error('Error processing referral:', e);
+                }
+            }
+            
+            // Mark this referral as processed
+            processedReferrals.push(referralKey);
+            localStorage.setItem('processedReferrals', JSON.stringify(processedReferrals));
+            
+            // Clear URL parameters
+            window.history.replaceState({}, document.title, window.location.pathname);
+        }
+    }
+}
+
+// --- UI FUNCTIONS ---
+function createUpgradeButton(config, index) {
+    const level = gameState.upgrades[config.id] || 0;
+    const cost = calculateCurrentCost(config.id);
+    const canAfford = gameState.energy >= cost;
+    const t = TRANSLATIONS[currentLang];
+
+    const btn = document.createElement('button');
+    btn.className = 'upgrade-btn';
+    btn.disabled = !canAfford;
+    btn.dataset.upgradeId = config.id;
+    
+    const handleClick = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (!btn.disabled) {
+            buyUpgrade(config.id);
+        }
+    };
+    
+    btn.addEventListener('click', handleClick);
+    btn.addEventListener('touchstart', handleClick, { passive: false });
+    
+    const upgradeInfo = t.upgrades[index];
+    btn.innerHTML = `
+        <div class="upgrade-info">
+            <div class="upgrade-name">${upgradeInfo.icon} ${upgradeInfo.name}</div>
+            <div class="upgrade-level">${t.level}: ${level}</div>
+        </div>
+        <div class="upgrade-cost-info">
+            <div class="upgrade-cost">${formatNumber(cost)}</div>
+            <div class="upgrade-benefit">+${formatNumber(config.baseEps)}${t.perSec}</div>
+        </div>
+    `;
+    
+    return btn;
+}
+
+function renderUpgrades() {
+    if (!needsUpgradeRerender) return;
+    
+    elements.upgradesContainer.innerHTML = '';
+    
+    UPGRADES_CONFIG.forEach((config, index) => {
+        if (gameState.eps >= MAX_EPS_LIMIT && config.baseEps > 50000) return;
+        
+        const btn = createUpgradeButton(config, index);
+        elements.upgradesContainer.appendChild(btn);
+    });
+    
+    needsUpgradeRerender = false;
+    lastRenderTime = Date.now();
+}
+
+function updateUpgradeButtons() {
+    const buttons = elements.upgradesContainer.querySelectorAll('.upgrade-btn');
+    buttons.forEach(btn => {
+        const upgradeId = btn.dataset.upgradeId;
+        const cost = calculateCurrentCost(upgradeId);
+        const canAfford = gameState.energy >= cost;
+        
+        if (btn.disabled !== !canAfford) {
+            btn.disabled = !canAfford;
+        }
+    });
+}
+
+function updateDisplay() {
+    const t = TRANSLATIONS[currentLang];
+    elements.energyCounter.textContent = formatNumber(Math.floor(gameState.energy));
+    document.title = `${formatNumber(Math.floor(gameState.energy))} | ${t.gameTitle}`;
+    elements.epsCounter.textContent = `${formatNumber(gameState.eps * getCurrentBoostMultiplier())}${t.perSec}`;
+    elements.referralCount.textContent = gameState.referralCount;
+    updateBoostIndicator();
+}
+
+function showClickEffect() {
+    const effect = document.createElement('div');
+    effect.className = 'click-effect';
+    effect.textContent = `+${CLICK_POWER}`;
+    elements.mainClickArea.appendChild(effect);
+    
+    setTimeout(() => {
+        if (effect.parentNode) {
+            effect.parentNode.removeChild(effect);
+        }
+    }, 600);
+}
+
+function updateReferralLink() {
+    if (!gameState.referralCode) {
+        gameState.referralCode = generateReferralCode();
+    }
+    const baseUrl = window.location.origin + window.location.pathname;
+    const referralUrl = `${baseUrl}?ref=${gameState.referralCode}`;
+    elements.referralLink.textContent = referralUrl;
+}
+
+// --- GAME LOOP AND SAVE/LOAD ---
+function gameLoop() {
+    const now = Date.now();
+    const deltaTime = Math.min((now - gameState.lastTick) / 1000, 1);
+    gameState.lastTick = now;
+
+    if (gameState.eps > 0) {
+        const boostMultiplier = getCurrentBoostMultiplier();
+        gameState.energy += gameState.eps * deltaTime * boostMultiplier;
+    }
+    
+    updateDisplay();
+    
+    if (now - lastRenderTime > 500) {
+        if (needsUpgradeRerender) {
+            renderUpgrades();
+        } else {
+            updateUpgradeButtons();
+        }
+        lastRenderTime = now;
+    }
+    
+    requestAnimationFrame(gameLoop);
+}
+
+function saveGame() {
+    try {
+        const saveData = {
+            ...gameState,
+            version: '2.0'
+        };
+        localStorage.setItem('quantumReactorSave', JSON.stringify(saveData));
+    } catch (e) {
+        console.error('Save error:', e);
+    }
+}
+
+function loadGame() {
+    try {
+        const savedGame = localStorage.getItem('quantumReactorSave');
+        if (savedGame) {
+            const loadedState = JSON.parse(savedGame);
+            gameState = {
+                energy: loadedState.energy || 10,
+                eps: loadedState.eps || 0,
+                lastTick: loadedState.lastTick || Date.now(),
+                upgrades: loadedState.upgrades || {},
+                language: loadedState.language || 'en',
+                referralCode: loadedState.referralCode || '',
+                referralCount: loadedState.referralCount || 0,
+                boostEndTime: loadedState.boostEndTime || 0,
+                processedReferrals: new Set(loadedState.processedReferrals || [])
+            };
+        }
+        
+        UPGRADES_CONFIG.forEach(u => {
+            if (typeof gameState.upgrades[u.id] === 'undefined') {
+                gameState.upgrades[u.id] = 0;
+            }
+        });
+        
+        currentLang = gameState.language;
+        updateLanguage(currentLang);
+        
+    } catch (e) {
+        console.error('Load error:', e);
+        gameState = {
+            energy: 10,
+            eps: 0,
+            lastTick: Date.now(),
+            upgrades: {},
+            language: 'en',
+            referralCode: '',
+            referralCount: 0,
+            boostEndTime: 0,
+            processedReferrals: new Set()
+        };
+        UPGRADES_CONFIG.forEach(u => gameState.upgrades[u.id] = 0);
+    }
+}
+
+function handleOfflineProgress() {
+    const now = Date.now();
+    const offlineSeconds = Math.floor((now - gameState.lastTick) / 1000);
+    
+    if (offlineSeconds > 10 && gameState.eps > 0) {
+        const boostMultiplier = getCurrentBoostMultiplier();
+        const energyGained = Math.floor(offlineSeconds * gameState.eps * boostMultiplier);
+        const t = TRANSLATIONS[currentLang];
+        
+        elements.offlineGain.textContent = `${formatNumber(energyGained)} ${t.energy.toLowerCase()}`;
+        elements.offlineTime.textContent = `${offlineSeconds}`;
+        elements.offlineTimeText.textContent = `(${t.offlineTimeText.replace('sec', offlineSeconds + ' ' + t.offlineTimeText.split(' ')[1] || 'sec')})`;
+        elements.offlineModal.style.display = 'flex';
+        
+        elements.claimOfflineBtn.onclick = () => {
+            gameState.energy += energyGained;
+            elements.offlineModal.style.display = 'none';
+            updateDisplay();
+            needsUpgradeRerender = true;
+        };
+    }
+    gameState.lastTick = now;
+}
+
+// --- EVENT HANDLERS ---
+function handleMainClick(e) {
+    e.preventDefault();
+    gameState.energy += CLICK_POWER;
+    showClickEffect();
+    updateDisplay();
+    needsUpgradeRerender = true;
+}
+
+function handleCopyLink() {
+    const referralUrl = elements.referralLink.textContent;
+    navigator.clipboard.writeText(referralUrl).then(() => {
+        const t = TRANSLATIONS[currentLang];
+        const originalText = elements.copyBtn.textContent;
+        elements.copyBtn.textContent = t.linkCopied;
+        setTimeout(() => {
+            elements.copyBtn.textContent = originalText;
+        }, 2000);
+    }).catch(() => {
+        // Fallback for older browsers
+        const textArea = document.createElement('textarea');
+        textArea.value = referralUrl;
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+        
+        const t = TRANSLATIONS[currentLang];
+        const originalText = elements.copyBtn.textContent;
+        elements.copyBtn.textContent = t.linkCopied;
+        setTimeout(() => {
+            elements.copyBtn.textContent = originalText;
+        }, 2000);
+    });
+}
+
+// --- INITIALIZATION ---
+window.addEventListener('load', () => {
+    loadGame();
+    processReferral();
+    recalculateEPS();
+    handleOfflineProgress();
+    updateReferralLink();
+    needsUpgradeRerender = true;
+    renderUpgrades();
+    
+    // Event listeners
+    elements.mainClickArea.addEventListener('click', handleMainClick);
+    elements.mainClickArea.addEventListener('touchstart', handleMainClick, { passive: false });
+    elements.copyBtn.addEventListener('click', handleCopyLink);
+    
+    // Language switcher
+    document.querySelectorAll('.lang-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            updateLanguage(btn.dataset.lang);
+        });
+    });
+    
+    gameLoop();
+    setInterval(saveGame, 10000);
+});
+
+window.addEventListener('beforeunload', saveGame);
+window.addEventListener('blur', saveGame);
+
+</script>
+</body>
+</html>
