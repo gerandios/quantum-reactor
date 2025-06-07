@@ -112,25 +112,85 @@
             20%, 24%, 55% { text-shadow: none; }
         }
 
+        /* Tutorial hint for new players */
+        .tutorial-hint {
+            background: rgba(255, 170, 0, 0.2);
+            border: 1px solid var(--warning-color);
+            border-radius: 8px;
+            padding: 10px 15px;
+            margin-bottom: 15px;
+            color: var(--warning-color);
+            font-size: 0.9rem;
+            animation: pulse-hint 2s infinite;
+            transition: opacity 0.3s;
+        }
+
+        .tutorial-hint.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        @keyframes pulse-hint {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.8; transform: scale(1.02); }
+        }
+
         .display-panel {
             background: rgba(0, 0, 0, 0.3);
             border-radius: 10px;
-            padding: 15px;
+            padding: 20px;
             margin-bottom: 25px;
-            border: 1px solid rgba(0,0,0,0.2);
+            border: 2px solid var(--primary-color);
             cursor: pointer;
-            transition: transform 0.1s ease, box-shadow 0.1s ease;
+            transition: all 0.2s ease;
             position: relative;
             overflow: hidden;
+            /* Pulsing animation to attract attention */
+            animation: pulsePanel 3s ease-in-out infinite;
+        }
+
+        @keyframes pulsePanel {
+            0%, 100% { 
+                box-shadow: 0 0 15px rgba(0, 255, 255, 0.4);
+                border-color: var(--primary-color);
+            }
+            50% { 
+                box-shadow: 0 0 30px rgba(0, 255, 255, 0.6);
+                border-color: #00ffff;
+            }
+        }
+
+        .display-panel.clicked {
+            animation: none;
         }
 
         .display-panel:hover {
-            box-shadow: 0 0 15px rgba(0, 255, 255, 0.3);
+            transform: scale(1.02);
+            box-shadow: 0 0 25px rgba(0, 255, 255, 0.6);
         }
 
         .display-panel:active {
             transform: scale(0.98);
             box-shadow: inset 0 0 15px var(--glow-color);
+        }
+
+        /* Tap/Click indicator */
+        .tap-indicator {
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255, 255, 255, 0.1);
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.8);
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateX(-50%) translateY(0); }
+            50% { transform: translateX(-50%) translateY(-5px); }
         }
 
         .click-effect {
@@ -140,9 +200,10 @@
             transform: translate(-50%, -50%);
             color: var(--primary-color);
             font-weight: bold;
-            font-size: 1.2rem;
+            font-size: 1.5rem;
             pointer-events: none;
-            animation: clickPop 0.6s ease-out forwards;
+            animation: clickPop 0.8s ease-out forwards;
+            text-shadow: 0 0 10px var(--glow-color);
         }
 
         @keyframes clickPop {
@@ -150,26 +211,52 @@
                 opacity: 1;
                 transform: translate(-50%, -50%) scale(1);
             }
+            50% {
+                opacity: 1;
+                transform: translate(-50%, -70%) scale(1.3);
+            }
             100% {
                 opacity: 0;
-                transform: translate(-50%, -80%) scale(1.5);
+                transform: translate(-50%, -100%) scale(1.8);
             }
         }
 
         .energy-counter {
             font-family: 'Orbitron', sans-serif;
-            font-size: 2.5rem;
+            font-size: 2.8rem;
             font-weight: 700;
             color: #fff;
             text-shadow: 0 0 8px var(--glow-color);
-            margin-bottom: 5px;
+            margin-bottom: 8px;
             line-height: 1.1;
+        }
+
+        .energy-label {
+            font-size: 1.2rem;
+            color: var(--primary-color);
+            margin-bottom: 5px;
+            font-weight: bold;
         }
 
         .eps-counter {
             font-size: 1rem;
             color: var(--primary-color);
             font-weight: 400;
+        }
+
+        /* Pointing hand animation */
+        .pointer-animation {
+            position: absolute;
+            bottom: -30px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 2rem;
+            animation: pointing 1.5s infinite;
+        }
+
+        @keyframes pointing {
+            0%, 100% { transform: translateX(-50%) translateY(0) rotate(0deg); }
+            50% { transform: translateX(-50%) translateY(-10px) rotate(-10deg); }
         }
 
         .boost-indicator {
@@ -210,6 +297,7 @@
             margin: 10px 0;
             word-break: break-all;
             border: 1px solid rgba(255, 255, 255, 0.2);
+            min-height: 20px;
         }
 
         .copy-btn {
@@ -221,6 +309,11 @@
             font-size: 0.8rem;
             cursor: pointer;
             margin-left: 10px;
+            transition: all 0.2s;
+        }
+
+        .copy-btn:hover {
+            background: var(--button-hover-bg);
         }
 
         .upgrades-container {
@@ -312,6 +405,14 @@
         }
         
         .modal-btn:hover { background: var(--button-hover-bg); box-shadow: 0 0 10px rgba(0, 255, 255, 0.3); }
+
+        /* Mobile optimizations */
+        @media (max-width: 480px) {
+            .energy-counter { font-size: 2.2rem; }
+            .tutorial-hint { font-size: 0.8rem; }
+            .display-panel { padding: 15px; }
+            .pointer-animation { font-size: 1.5rem; }
+        }
     </style>
 </head>
 <body>
@@ -324,21 +425,27 @@
         
         <h1 id="game-title">⚛️ Quantum Reactor</h1>
         
+        <div id="tutorial-hint" class="tutorial-hint">
+            👆 <span id="hint-text">Click or tap the reactor below to generate energy!</span>
+        </div>
+        
         <div id="boost-indicator" class="boost-indicator">
             <div id="boost-text">🚀 Time Boost Active: 00:00</div>
         </div>
         
         <div id="main-click-area" class="display-panel">
+            <div id="tap-indicator" class="tap-indicator">CLICK HERE</div>
             <div id="energy-counter" class="energy-counter">0</div>
-            <div id="energy-label">Energy</div>
+            <div id="energy-label" class="energy-label">Energy</div>
             <div id="eps-counter" class="eps-counter">0.0/sec</div>
+            <div id="pointer-animation" class="pointer-animation">👇</div>
         </div>
         
         <div class="referral-section">
             <div id="referral-title">🎁 Invite Friends</div>
             <div id="referral-description">Get 1 hour time boost for each new player!</div>
             <div id="referral-stats">Referrals: <span id="referral-count">0</span></div>
-            <div class="referral-link" id="referral-link"></div>
+            <div class="referral-link" id="referral-link">Loading...</div>
             <button class="copy-btn" id="copy-btn">Copy Link</button>
         </div>
         
@@ -368,12 +475,14 @@ const TRANSLATIONS = {
         energy: 'Energy',
         perSec: '/sec',
         level: 'Level',
+        hintText: 'Click or tap the reactor below to generate energy!',
+        tapIndicator: 'CLICK HERE',
         boostActive: '🚀 Time Boost Active',
         inviteFriends: '🎁 Invite Friends',
         inviteDescription: 'Get 1 hour time boost for each new player!',
         referrals: 'Referrals',
         copyLink: 'Copy Link',
-        linkCopied: 'Link copied to clipboard!',
+        linkCopied: 'Link copied!',
         privacyPolicy: 'Privacy Policy',
         offlineTitle: 'OFFLINE PROGRESS',
         offlineDescription: 'While you were away, the reactor generated:',
@@ -395,12 +504,14 @@ const TRANSLATIONS = {
         energy: 'Энергия',
         perSec: '/сек',
         level: 'Уровень',
+        hintText: 'Кликай или тапай на реактор ниже для генерации энергии!',
+        tapIndicator: 'КЛИКАЙ СЮДА',
         boostActive: '🚀 Временной Буст Активен',
         inviteFriends: '🎁 Пригласи Друзей',
         inviteDescription: 'Получай 1 час временного буста за каждого нового игрока!',
         referrals: 'Рефералы',
-        copyLink: 'Копировать Ссылку',
-        linkCopied: 'Ссылка скопирована в буфер обмена!',
+        copyLink: 'Копировать',
+        linkCopied: 'Ссылка скопирована!',
         privacyPolicy: 'Политика Конфиденциальности',
         offlineTitle: 'ОФФЛАЙН-ПРОГРЕСС',
         offlineDescription: 'Пока вас не было, реактор сгенерировал:',
@@ -422,12 +533,14 @@ const TRANSLATIONS = {
         energy: 'Енергія',
         perSec: '/сек',
         level: 'Рівень',
+        hintText: 'Клікай або тапай на реактор нижче для генерації енергії!',
+        tapIndicator: 'КЛІКАЙ ТУТ',
         boostActive: '🚀 Часовий Буст Активний',
         inviteFriends: '🎁 Запроси Друзів',
         inviteDescription: 'Отримуй 1 годину часового бусту за кожного нового гравця!',
         referrals: 'Реферали',
-        copyLink: 'Копіювати Посилання',
-        linkCopied: 'Посилання скопійовано в буфер обміну!',
+        copyLink: 'Копіювати',
+        linkCopied: 'Посилання скопійовано!',
         privacyPolicy: 'Політика Конфіденційності',
         offlineTitle: 'ОФЛАЙН-ПРОГРЕС',
         offlineDescription: 'Поки вас не було, реактор згенерував:',
@@ -463,6 +576,57 @@ const CLICK_POWER = 1;
 const MAX_EPS_LIMIT = 10000000;
 const BOOST_DURATION = 3600000; // 1 hour in milliseconds
 
+// --- PERSISTENT USER IDENTITY ---
+function generateUserFingerprint() {
+    try {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        ctx.textBaseline = 'top';
+        ctx.font = '14px Arial';
+        ctx.fillText('QR_Fingerprint_2024', 2, 2);
+        
+        const fingerprint = [
+            canvas.toDataURL(),
+            navigator.userAgent,
+            navigator.language,
+            screen.width + 'x' + screen.height,
+            screen.colorDepth,
+            new Date().getTimezoneOffset(),
+            navigator.hardwareConcurrency || 0,
+            navigator.platform,
+            navigator.vendor,
+            window.devicePixelRatio || 1
+        ].join('|');
+        
+        // Create a stable hash
+        let hash = 0;
+        for (let i = 0; i < fingerprint.length; i++) {
+            const char = fingerprint.charCodeAt(i);
+            hash = ((hash << 5) - hash) + char;
+            hash = hash & hash;
+        }
+        return 'user_' + Math.abs(hash).toString(36);
+    } catch (e) {
+        // Fallback to stored ID or generate new one
+        let storedId = localStorage.getItem('quantumReactorUserId');
+        if (!storedId) {
+            storedId = 'user_' + Date.now() + '_' + Math.random().toString(36).substring(2);
+            localStorage.setItem('quantumReactorUserId', storedId);
+        }
+        return storedId;
+    }
+}
+
+function generateStableReferralCode(userId) {
+    // Generate stable referral code based on user ID
+    let hash = 0;
+    for (let i = 0; i < userId.length; i++) {
+        hash = ((hash << 5) - hash) + userId.charCodeAt(i);
+        hash = hash & hash;
+    }
+    return Math.abs(hash).toString(36).substring(0, 6).toUpperCase();
+}
+
 // --- GAME STATE ---
 let gameState = {
     energy: 10,
@@ -473,7 +637,9 @@ let gameState = {
     referralCode: '',
     referralCount: 0,
     boostEndTime: 0,
-    processedReferrals: new Set()
+    clickCount: 0,
+    userId: '',
+    version: '3.0'
 };
 
 let needsUpgradeRerender = true;
@@ -486,6 +652,10 @@ const elements = {
     energyCounter: document.getElementById('energy-counter'),
     energyLabel: document.getElementById('energy-label'),
     epsCounter: document.getElementById('eps-counter'),
+    tutorialHint: document.getElementById('tutorial-hint'),
+    hintText: document.getElementById('hint-text'),
+    tapIndicator: document.getElementById('tap-indicator'),
+    pointerAnimation: document.getElementById('pointer-animation'),
     boostIndicator: document.getElementById('boost-indicator'),
     boostText: document.getElementById('boost-text'),
     upgradesContainer: document.getElementById('upgrades-container'),
@@ -524,36 +694,6 @@ function formatTime(seconds) {
     return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
 }
 
-function generateFingerprint() {
-    const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d');
-    ctx.textBaseline = 'top';
-    ctx.font = '14px Arial';
-    ctx.fillText('Quantum Reactor Fingerprint', 2, 2);
-    
-    const fingerprint = [
-        canvas.toDataURL(),
-        navigator.userAgent,
-        navigator.language,
-        screen.width + 'x' + screen.height,
-        new Date().getTimezoneOffset(),
-        navigator.hardwareConcurrency || 0
-    ].join('|');
-    
-    // Simple hash function
-    let hash = 0;
-    for (let i = 0; i < fingerprint.length; i++) {
-        const char = fingerprint.charCodeAt(i);
-        hash = ((hash << 5) - hash) + char;
-        hash = hash & hash;
-    }
-    return Math.abs(hash).toString(36);
-}
-
-function generateReferralCode() {
-    return Math.random().toString(36).substring(2, 8).toUpperCase();
-}
-
 function getCurrentBoostMultiplier() {
     if (Date.now() < gameState.boostEndTime) {
         return 2; // 2x speed during boost
@@ -569,6 +709,8 @@ function updateLanguage(lang) {
     const t = TRANSLATIONS[lang];
     elements.gameTitle.textContent = t.gameTitle;
     elements.energyLabel.textContent = t.energy;
+    elements.hintText.textContent = t.hintText;
+    elements.tapIndicator.textContent = t.tapIndicator;
     elements.referralTitle.textContent = t.inviteFriends;
     elements.referralDescription.textContent = t.inviteDescription;
     elements.referralStats.innerHTML = `${t.referrals}: <span id="referral-count">${gameState.referralCount}</span>`;
@@ -577,6 +719,9 @@ function updateLanguage(lang) {
     elements.offlineTitle.textContent = t.offlineTitle;
     elements.offlineDescription.textContent = t.offlineDescription;
     elements.claimOfflineBtn.textContent = t.claim;
+    
+    // Update referral count element reference
+    elements.referralCount = document.getElementById('referral-count');
     
     // Update language buttons
     document.querySelectorAll('.lang-btn').forEach(btn => {
@@ -633,44 +778,77 @@ function updateBoostIndicator() {
     }
 }
 
+function hideTutorialElements() {
+    // Hide tutorial elements after first few clicks
+    if (gameState.clickCount >= 5) {
+        elements.tutorialHint.classList.add('hidden');
+        elements.tapIndicator.style.display = 'none';
+        elements.pointerAnimation.style.display = 'none';
+        elements.mainClickArea.classList.add('clicked');
+    }
+}
+
 function processReferral() {
     const urlParams = new URLSearchParams(window.location.search);
     const referralCode = urlParams.get('ref');
     
     if (referralCode && referralCode !== gameState.referralCode) {
-        const userFingerprint = generateFingerprint();
-        const referralKey = `ref_${referralCode}_${userFingerprint}`;
+        const currentUserFingerprint = generateUserFingerprint();
+        const referralKey = `ref_${referralCode}_${currentUserFingerprint}`;
         
         // Check if this user already used this referral
         const processedReferrals = JSON.parse(localStorage.getItem('processedReferrals') || '[]');
         
         if (!processedReferrals.includes(referralKey)) {
-            // Add boost to referrer
-            const referrerData = localStorage.getItem('quantumReactorSave');
-            if (referrerData) {
-                try {
-                    const referrerState = JSON.parse(referrerData);
-                    if (referrerState.referralCode === referralCode) {
-                        referrerState.referralCount = (referrerState.referralCount || 0) + 1;
-                        referrerState.boostEndTime = Math.max(
-                            referrerState.boostEndTime || 0,
-                            Date.now() + BOOST_DURATION
-                        );
-                        localStorage.setItem('quantumReactorSave', JSON.stringify(referrerState));
+            // Find all saves and check for the referral code owner
+            const allSaves = getAllUserSaves();
+            let referrerFound = false;
+            
+            for (const [saveKey, saveData] of Object.entries(allSaves)) {
+                if (saveData.referralCode === referralCode) {
+                    // Add boost to referrer
+                    saveData.referralCount = (saveData.referralCount || 0) + 1;
+                    saveData.boostEndTime = Math.max(
+                        saveData.boostEndTime || 0,
+                        Date.now() + BOOST_DURATION
+                    );
+                    localStorage.setItem(saveKey, JSON.stringify(saveData));
+                    referrerFound = true;
+                    
+                    // If this is the current user, update their state
+                    if (saveData.userId === gameState.userId) {
+                        gameState.referralCount = saveData.referralCount;
+                        gameState.boostEndTime = saveData.boostEndTime;
                     }
-                } catch (e) {
-                    console.error('Error processing referral:', e);
+                    break;
                 }
             }
             
-            // Mark this referral as processed
-            processedReferrals.push(referralKey);
-            localStorage.setItem('processedReferrals', JSON.stringify(processedReferrals));
+            if (referrerFound) {
+                // Mark this referral as processed
+                processedReferrals.push(referralKey);
+                localStorage.setItem('processedReferrals', JSON.stringify(processedReferrals));
+            }
             
             // Clear URL parameters
             window.history.replaceState({}, document.title, window.location.pathname);
         }
     }
+}
+
+function getAllUserSaves() {
+    const saves = {};
+    for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && key.startsWith('quantumReactorSave_')) {
+            try {
+                saves[key] = JSON.parse(localStorage.getItem(key));
+            } catch (e) {
+                console.error('Error parsing save:', key, e);
+            }
+        }
+    }
+    return saves;
 }
 
 // --- UI FUNCTIONS ---
@@ -747,6 +925,7 @@ function updateDisplay() {
     elements.epsCounter.textContent = `${formatNumber(gameState.eps * getCurrentBoostMultiplier())}${t.perSec}`;
     elements.referralCount.textContent = gameState.referralCount;
     updateBoostIndicator();
+    hideTutorialElements();
 }
 
 function showClickEffect() {
@@ -759,13 +938,10 @@ function showClickEffect() {
         if (effect.parentNode) {
             effect.parentNode.removeChild(effect);
         }
-    }, 600);
+    }, 800);
 }
 
 function updateReferralLink() {
-    if (!gameState.referralCode) {
-        gameState.referralCode = generateReferralCode();
-    }
     const baseUrl = window.location.origin + window.location.pathname;
     const referralUrl = `${baseUrl}?ref=${gameState.referralCode}`;
     elements.referralLink.textContent = referralUrl;
@@ -796,13 +972,19 @@ function gameLoop() {
     requestAnimationFrame(gameLoop);
 }
 
+function getSaveKey() {
+    return `quantumReactorSave_${gameState.userId}`;
+}
+
 function saveGame() {
     try {
         const saveData = {
             ...gameState,
-            version: '2.0'
+            version: '3.0',
+            lastSave: Date.now()
         };
-        localStorage.setItem('quantumReactorSave', JSON.stringify(saveData));
+        
+        localStorage.setItem(getSaveKey(), JSON.stringify(saveData));
     } catch (e) {
         console.error('Save error:', e);
     }
@@ -810,7 +992,17 @@ function saveGame() {
 
 function loadGame() {
     try {
-        const savedGame = localStorage.getItem('quantumReactorSave');
+        // Get or generate user fingerprint
+        const userId = generateUserFingerprint();
+        gameState.userId = userId;
+        
+        // Generate stable referral code based on user ID
+        const referralCode = generateStableReferralCode(userId);
+        
+        // Try to load existing save
+        const saveKey = `quantumReactorSave_${userId}`;
+        const savedGame = localStorage.getItem(saveKey);
+        
         if (savedGame) {
             const loadedState = JSON.parse(savedGame);
             gameState = {
@@ -819,13 +1011,36 @@ function loadGame() {
                 lastTick: loadedState.lastTick || Date.now(),
                 upgrades: loadedState.upgrades || {},
                 language: loadedState.language || 'en',
-                referralCode: loadedState.referralCode || '',
+                referralCode: loadedState.referralCode || referralCode,
                 referralCount: loadedState.referralCount || 0,
                 boostEndTime: loadedState.boostEndTime || 0,
-                processedReferrals: new Set(loadedState.processedReferrals || [])
+                clickCount: loadedState.clickCount || 0,
+                userId: userId,
+                version: '3.0'
+            };
+        } else {
+            // New player
+            gameState = {
+                energy: 10,
+                eps: 0,
+                lastTick: Date.now(),
+                upgrades: {},
+                language: 'en',
+                referralCode: referralCode,
+                referralCount: 0,
+                boostEndTime: 0,
+                clickCount: 0,
+                userId: userId,
+                version: '3.0'
             };
         }
         
+        // Ensure referral code is always the same for this user
+        if (!gameState.referralCode || gameState.referralCode !== referralCode) {
+            gameState.referralCode = referralCode;
+        }
+        
+        // Initialize upgrades
         UPGRADES_CONFIG.forEach(u => {
             if (typeof gameState.upgrades[u.id] === 'undefined') {
                 gameState.upgrades[u.id] = 0;
@@ -837,16 +1052,22 @@ function loadGame() {
         
     } catch (e) {
         console.error('Load error:', e);
+        // Reset to default state with proper fingerprint
+        const userId = generateUserFingerprint();
+        const referralCode = generateStableReferralCode(userId);
+        
         gameState = {
             energy: 10,
             eps: 0,
             lastTick: Date.now(),
             upgrades: {},
             language: 'en',
-            referralCode: '',
+            referralCode: referralCode,
             referralCount: 0,
             boostEndTime: 0,
-            processedReferrals: new Set()
+            clickCount: 0,
+            userId: userId,
+            version: '3.0'
         };
         UPGRADES_CONFIG.forEach(u => gameState.upgrades[u.id] = 0);
     }
@@ -863,7 +1084,7 @@ function handleOfflineProgress() {
         
         elements.offlineGain.textContent = `${formatNumber(energyGained)} ${t.energy.toLowerCase()}`;
         elements.offlineTime.textContent = `${offlineSeconds}`;
-        elements.offlineTimeText.textContent = `(${t.offlineTimeText.replace('sec', offlineSeconds + ' ' + t.offlineTimeText.split(' ')[1] || 'sec')})`;
+        elements.offlineTimeText.textContent = `(for ${offlineSeconds} ${t.offlineTimeText})`;
         elements.offlineModal.style.display = 'flex';
         
         elements.claimOfflineBtn.onclick = () => {
@@ -880,6 +1101,7 @@ function handleOfflineProgress() {
 function handleMainClick(e) {
     e.preventDefault();
     gameState.energy += CLICK_POWER;
+    gameState.clickCount++;
     showClickEffect();
     updateDisplay();
     needsUpgradeRerender = true;
@@ -887,29 +1109,48 @@ function handleMainClick(e) {
 
 function handleCopyLink() {
     const referralUrl = elements.referralLink.textContent;
-    navigator.clipboard.writeText(referralUrl).then(() => {
-        const t = TRANSLATIONS[currentLang];
-        const originalText = elements.copyBtn.textContent;
-        elements.copyBtn.textContent = t.linkCopied;
-        setTimeout(() => {
-            elements.copyBtn.textContent = originalText;
-        }, 2000);
-    }).catch(() => {
-        // Fallback for older browsers
-        const textArea = document.createElement('textarea');
-        textArea.value = referralUrl;
-        document.body.appendChild(textArea);
-        textArea.select();
+    
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(referralUrl).then(() => {
+            showCopySuccess();
+        }).catch(() => {
+            fallbackCopyToClipboard(referralUrl);
+        });
+    } else {
+        fallbackCopyToClipboard(referralUrl);
+    }
+}
+
+function fallbackCopyToClipboard(text) {
+    const textArea = document.createElement('textarea');
+    textArea.value = text;
+    textArea.style.position = 'fixed';
+    textArea.style.left = '-999999px';
+    textArea.style.top = '-999999px';
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+    
+    try {
         document.execCommand('copy');
-        document.body.removeChild(textArea);
-        
-        const t = TRANSLATIONS[currentLang];
-        const originalText = elements.copyBtn.textContent;
-        elements.copyBtn.textContent = t.linkCopied;
-        setTimeout(() => {
-            elements.copyBtn.textContent = originalText;
-        }, 2000);
-    });
+        showCopySuccess();
+    } catch (err) {
+        console.error('Fallback copy failed:', err);
+    }
+    
+    document.body.removeChild(textArea);
+}
+
+function showCopySuccess() {
+    const t = TRANSLATIONS[currentLang];
+    const originalText = elements.copyBtn.textContent;
+    elements.copyBtn.textContent = t.linkCopied;
+    elements.copyBtn.style.background = 'rgba(0, 255, 136, 0.3)';
+    
+    setTimeout(() => {
+        elements.copyBtn.textContent = originalText;
+        elements.copyBtn.style.background = '';
+    }, 2000);
 }
 
 // --- INITIALIZATION ---
@@ -935,11 +1176,17 @@ window.addEventListener('load', () => {
     });
     
     gameLoop();
-    setInterval(saveGame, 10000);
+    
+    // Auto-save every 5 seconds
+    setInterval(saveGame, 5000);
 });
 
+// Save on page events
 window.addEventListener('beforeunload', saveGame);
 window.addEventListener('blur', saveGame);
+window.addEventListener('focus', () => {
+    processReferral();
+});
 
 </script>
 </body>
